@@ -35,11 +35,15 @@ public class ProjectClient {
     private void handleProjectIteration1Logic() throws IOException {
         for (String message = getServerResponse(); message != null; message = getServerResponse()) {
             System.out.println(message);
+            switch (message) {
+                case "get team name" -> sendServerMessage(getTeamNameRequestMessage());
+//                case "get id" -> sendServerMessage(id);
+            }
         }
     }
 
-    public void handleTeamNameRequest() {
-
+    public String getTeamNameRequestMessage() {
+        return ProjectConstants.TEAM_NAME + '\n';
     }
 
     public void handleCodeRequest() {

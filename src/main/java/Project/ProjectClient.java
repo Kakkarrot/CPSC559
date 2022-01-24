@@ -3,17 +3,15 @@ package Project;
 import java.io.*;
 import java.net.Socket;
 
+import Project.ProjectConstants;
+
 public class ProjectClient {
-
-    private static final String URL = "136.159.5.22";
-    public static final int PORT = 55921;
-
     private Socket socket;
     private BufferedReader readSocket;
     private BufferedWriter writeSocket;
 
-    private void connectToServer() throws IOException {
-        socket = new Socket(URL, PORT);
+    private void connectToServer(String serverUrl) throws IOException {
+        socket = new Socket(serverUrl, ProjectConstants.SERVER_PORT);
         readSocket = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writeSocket = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
     }
@@ -22,6 +20,22 @@ public class ProjectClient {
         readSocket.close();
         writeSocket.close();
         socket.close();
+    }
+
+    private String getServerResponse() throws IOException {
+        String message = readSocket.readLine();
+        return message;
+    }
+
+    private void sendServerMessage(String message) throws IOException {
+        writeSocket.write(message);
+        writeSocket.flush();
+    }
+
+    private void handleProjectIteration1Logic() throws IOException {
+        for (String message = getServerResponse(); message != null; message = getServerResponse()) {
+            System.out.println(message);
+        }
     }
 
     public void handleTeamNameRequest() {
@@ -45,6 +59,18 @@ public class ProjectClient {
     }
 
     public static void main(String[] args) {
-
+        ProjectClient client = new ProjectClient();
+        try {
+            client.connectToServer("localhost");
+            client.handleProjectIteration1Logic();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                client.disconnectFromServer();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

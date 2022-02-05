@@ -1,4 +1,6 @@
-package Project.Iteration1;
+package ProjectIteration1;
+
+import Project.ProjectConstants;
 
 import java.io.*;
 import java.net.Socket;

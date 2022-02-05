@@ -1,4 +1,4 @@
-package Project.Iteration1;
+package Project;
 
 public class ProjectConstants {
     public static final String TEAM_NAME = "Kakkarrot";

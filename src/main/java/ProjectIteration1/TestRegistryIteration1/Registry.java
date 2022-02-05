@@ -1,4 +1,4 @@
-package Project.Iteration1.TestRegistryIteration1;
+package ProjectIteration1.TestRegistryIteration1;
 
 import java.io.IOException;
 import java.net.BindException;

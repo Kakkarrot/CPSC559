@@ -1,7 +1,7 @@
 package ProjectIteration2;
 
-import Project.Iteration1.Peer;
-import Project.Iteration1.ProjectConstants;
+import ProjectIteration1.Peer;
+import Project.ProjectConstants;
 
 import java.io.*;
 import java.net.Socket;

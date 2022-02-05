@@ -1,4 +1,4 @@
-package Project.Iteration1;
+package ProjectIteration1;
 
 import java.util.ArrayList;
 import java.util.List;

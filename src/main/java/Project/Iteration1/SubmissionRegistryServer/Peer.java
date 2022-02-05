@@ -1,4 +1,4 @@
-package Project.SubmissionRegistryServer;
+package Project.Iteration1.SubmissionRegistryServer;
 
 public class Peer {
 	String address;

@@ -1,4 +1,4 @@
-package Project.TestRegistryIteration1;
+package Project.Iteration1.TestRegistryIteration1;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

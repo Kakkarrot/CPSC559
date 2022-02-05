@@ -1,11 +1,9 @@
-package Project.SubmissionRegistryServer;
+package Project.Iteration1.SubmissionRegistryServer;
 
 import java.io.IOException;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.*;

@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class ProjectClient {
+public class ProjectIteration1Client {
     public static final String DIRECTORY = "/Users/willieli/CPSC559/src/main/java/Project/Iteration1";
 
     private Socket socket;
@@ -54,7 +54,7 @@ public class ProjectClient {
 
     private String getFilesAsStringFrom() throws IOException {
         StringBuilder result = new StringBuilder();
-        File directory = new File(ProjectClient.DIRECTORY);
+        File directory = new File(ProjectIteration1Client.DIRECTORY);
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
@@ -122,7 +122,7 @@ public class ProjectClient {
     }
 
     public static void main(String[] args) {
-        ProjectClient client = new ProjectClient();
+        ProjectIteration1Client client = new ProjectIteration1Client();
         try {
             client.connectToServer(ProjectConstants.SERVER_URL);
             client.handleProjectIteration1Logic();

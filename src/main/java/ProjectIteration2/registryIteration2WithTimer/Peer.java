@@ -1,4 +1,4 @@
-package ProjectIteration2.registryWithTimer;
+package ProjectIteration2.registryIteration2WithTimer;
 public class Peer {
 	String address;
 	int port;

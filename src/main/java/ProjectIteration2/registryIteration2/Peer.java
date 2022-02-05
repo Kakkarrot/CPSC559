@@ -1,4 +1,4 @@
-package ProjectIteration2.registry;
+package ProjectIteration2.registryIteration2;
 public class Peer {
 	String address;
 	int port;

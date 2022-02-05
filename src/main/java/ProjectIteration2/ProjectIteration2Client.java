@@ -4,10 +4,7 @@ import ProjectIteration1.Peer;
 import Project.ProjectConstants;
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,9 +20,7 @@ public class ProjectIteration2Client {
     private CopyOnWriteArraySet<Peer> peers;
 
     public void connectToServer(String serverUrl) throws IOException {
-        socket = new Socket();
-        socket.bind(new InetSocketAddress(InetAddress.getLocalHost().getHostAddress(), 44121));
-        socket.connect(new InetSocketAddress(serverUrl, ProjectConstants.SERVER_PORT));
+        socket = new Socket(serverUrl, ProjectConstants.SERVER_PORT);
         readSocket = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writeSocket = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         peers = new CopyOnWriteArraySet<>();
@@ -54,7 +49,7 @@ public class ProjectIteration2Client {
                 case "get code" -> sendServerMessage(getCodeRequestMessage());
                 case "receive peers" -> processRecieveRequest();
                 case "get report" -> sendServerMessage(getReportRequestMessage());
-//                case "get location" -> sendServerMessage(getReportRequestMessage());
+                case "get location" -> sendServerMessage(getLocationMessageRequest());
                 case "close" -> {
                     return;
                 }
@@ -63,17 +58,18 @@ public class ProjectIteration2Client {
     }
 
     private String getLocationMessageRequest() {
-        socket.getPort();
-        return null;
+        return socket.getLocalAddress().toString().substring(1) + ":" + socket.getLocalPort() + '\n';
     }
 
-    private String getFilesAsStringFrom() throws IOException {
+    private String getFilesAsStringFrom(String path) throws IOException {
         StringBuilder result = new StringBuilder();
-        File directory = new File(ProjectIteration2Client.DIRECTORY);
+        File directory = new File(path);
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
-                result.append(getFileAsString(file.getAbsolutePath())).append('\n');
+                if (!file.isDirectory()) {
+                    result.append(getFileAsString(file.getAbsolutePath())).append('\n');
+                }
             }
         }
         return result.toString();
@@ -91,7 +87,7 @@ public class ProjectIteration2Client {
         String language = "Java\n";
         String endOfCode = "...\n";
         return language +
-                getFilesAsStringFrom() +
+                getFilesAsStringFrom(ProjectIteration2Client.DIRECTORY) +
                 endOfCode;
     }
 

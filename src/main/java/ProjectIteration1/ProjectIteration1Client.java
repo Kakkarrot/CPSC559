@@ -19,7 +19,7 @@ public class ProjectIteration1Client {
     private CopyOnWriteArraySet<Peer> peers;
 
     public void connectToServer(String serverUrl) throws IOException {
-        socket = new Socket(serverUrl, ProjectConstants.SERVER_PORT);
+        socket = new Socket(serverUrl, ProjectConstants.REGISTRY_PORT);
         readSocket = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writeSocket = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         peers = new CopyOnWriteArraySet<>();
@@ -94,9 +94,9 @@ public class ProjectIteration1Client {
 
     private String getSingleSourceForInteration1() {
         return "1\n"
-                + ProjectConstants.SERVER_URL
+                + ProjectConstants.REGISTRY_URL
                 + ':'
-                + ProjectConstants.SERVER_PORT
+                + ProjectConstants.REGISTRY_PORT
                 + '\n'
                 + LocalDateTime.now() +
                 '\n';
@@ -126,7 +126,7 @@ public class ProjectIteration1Client {
     public static void main(String[] args) {
         ProjectIteration1Client client = new ProjectIteration1Client();
         try {
-            client.connectToServer(ProjectConstants.SERVER_URL);
+            client.connectToServer(ProjectConstants.REGISTRY_URL);
             client.handleProjectIteration1Logic();
         } catch (IOException e) {
             e.printStackTrace();

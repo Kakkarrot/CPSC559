@@ -4,6 +4,8 @@ import ProjectIteration1.Peer;
 import Project.ProjectConstants;
 
 import java.io.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -13,43 +15,55 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 public class ProjectIteration2Client {
     public static final String DIRECTORY = "/Users/willieli/CPSC559/src/main/java/ProjectIteration2";
+    public static final int PEER_PORT = 50797;
 
-    private Socket socket;
+    private Socket registrySocket;
     private BufferedReader readSocket;
     private BufferedWriter writeSocket;
     private CopyOnWriteArraySet<Peer> peers;
 
-    public void connectToServer(String serverUrl) throws IOException {
-        socket = new Socket(serverUrl, ProjectConstants.SERVER_PORT);
-        readSocket = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        writeSocket = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+    private DatagramSocket peerSocket;
+
+
+    public void connectToRegistry(String serverUrl) throws IOException {
+        registrySocket = new Socket(serverUrl, ProjectConstants.REGISTRY_PORT);
+        readSocket = new BufferedReader(new InputStreamReader(registrySocket.getInputStream()));
+        writeSocket = new BufferedWriter(new OutputStreamWriter(registrySocket.getOutputStream()));
         peers = new CopyOnWriteArraySet<>();
     }
 
-    public void disconnectFromServer() throws IOException {
-        readSocket.close();
-        writeSocket.close();
-        socket.close();
+    public void initializePeerCommunication() throws IOException {
+        peerSocket = new DatagramSocket(PEER_PORT);
     }
 
-    private String getServerResponse() throws IOException {
+    public void closeRegistrySocket() throws IOException {
+        readSocket.close();
+        writeSocket.close();
+        registrySocket.close();
+    }
+
+    public void closePeerSocket() {
+        peerSocket.close();
+    }
+
+    private String getRegistryResponse() throws IOException {
         return readSocket.readLine();
     }
 
-    private void sendServerMessage(String message) throws IOException {
+    private void sendMessageToRegistry(String message) throws IOException {
         writeSocket.write(message);
         writeSocket.flush();
     }
 
-    public void handleProjectIteration2Logic() throws IOException {
-        for (String message = getServerResponse(); message != null; message = getServerResponse()) {
+    public void handleCommunicationWithRegistry() throws IOException {
+        for (String message = getRegistryResponse(); message != null; message = getRegistryResponse()) {
             System.out.println(message);
             switch (message) {
-                case "get team name" -> sendServerMessage(getTeamNameRequestMessage());
-                case "get code" -> sendServerMessage(getCodeRequestMessage());
+                case "get team name" -> sendMessageToRegistry(getTeamNameRequestMessage());
+                case "get code" -> sendMessageToRegistry(getCodeRequestMessage());
                 case "receive peers" -> processRecieveRequest();
-                case "get report" -> sendServerMessage(getReportRequestMessage());
-                case "get location" -> sendServerMessage(getLocationMessageRequest());
+                case "get report" -> sendMessageToRegistry(getReportRequestMessage());
+                case "get location" -> sendMessageToRegistry(getLocationMessageRequest());
                 case "close" -> {
                     return;
                 }
@@ -57,8 +71,30 @@ public class ProjectIteration2Client {
         }
     }
 
+    public String getMessageFromPeers() throws IOException {
+        byte[] arr = new byte[256];
+        DatagramPacket packet = new DatagramPacket(arr, arr.length);
+        peerSocket.receive(packet);
+        return new String(packet.getData(), 0, packet.getLength());
+    }
+
+    public void sendMessageToPeers(String message) throws IOException {
+        DatagramPacket packet = new DatagramPacket(message.getBytes(),
+                message.getBytes().length,
+                registrySocket.getLocalAddress(),
+                PEER_PORT);
+        peerSocket.send(packet);
+    }
+
+    public void handleCommunicationWithPeers() throws IOException {
+        sendMessageToPeers("Testing");
+        for (String message = getMessageFromPeers(); true; message = getMessageFromPeers()) {
+            System.out.println(message);
+        }
+    }
+
     private String getLocationMessageRequest() {
-        return socket.getLocalAddress().toString().substring(1) + ":" + socket.getLocalPort() + '\n';
+        return registrySocket.getLocalAddress().toString().substring(1) + ":" + PEER_PORT + '\n';
     }
 
     private String getFilesAsStringFrom(String path) throws IOException {
@@ -92,9 +128,11 @@ public class ProjectIteration2Client {
     }
 
     private void processRecieveRequest() throws IOException {
-        String numberOfPeers = getServerResponse();
+        String numberOfPeers = getRegistryResponse();
+        System.out.println(numberOfPeers);
         for (int i = 0; i < Integer.parseInt(numberOfPeers); i++) {
-            String response = getServerResponse();
+            String response = getRegistryResponse();
+            System.out.println(response);
             String[] temp = response.split(":");
             Peer peer = new Peer(temp[0], Integer.parseInt(temp[1]));
             peers.add(peer);
@@ -103,9 +141,9 @@ public class ProjectIteration2Client {
 
     private String getSingleSourceForInteration1() {
         return "1\n"
-                + ProjectConstants.SERVER_URL
+                + ProjectConstants.REGISTRY_URL
                 + ':'
-                + ProjectConstants.SERVER_PORT
+                + ProjectConstants.REGISTRY_PORT
                 + '\n'
                 + LocalDateTime.now() +
                 '\n';
@@ -136,13 +174,18 @@ public class ProjectIteration2Client {
         ProjectIteration2Client client = new ProjectIteration2Client();
         String testUrl = "localhost";
         try {
-            client.connectToServer(testUrl);
-            client.handleProjectIteration2Logic();
+            client.initializePeerCommunication();
+            client.connectToRegistry(testUrl);
+//            client.connectToRegistry(ProjectConstants.REGISTRY_URL);
+            client.handleCommunicationWithRegistry();
+            client.handleCommunicationWithPeers();
+            client.handleCommunicationWithRegistry();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
-                client.disconnectFromServer();
+                client.closeRegistrySocket();
+                client.closePeerSocket();
             } catch (IOException e) {
                 e.printStackTrace();
             }

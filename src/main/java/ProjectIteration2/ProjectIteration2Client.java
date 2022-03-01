@@ -15,7 +15,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 public class ProjectIteration2Client {
     public static final String DIRECTORY = "/Users/willieli/CPSC559/src/main/java/ProjectIteration2";
-    public static final int PEER_PORT = 50797;
 
     private Socket registrySocket;
     private BufferedReader readSocket;
@@ -33,7 +32,8 @@ public class ProjectIteration2Client {
     }
 
     public void initializePeerCommunication() throws IOException {
-        peerSocket = new DatagramSocket(PEER_PORT);
+        peerSocket = new DatagramSocket();
+        System.out.println(peerSocket.getPort() + " " + peerSocket.getLocalPort());
     }
 
     public void closeRegistrySocket() throws IOException {
@@ -72,6 +72,7 @@ public class ProjectIteration2Client {
     }
 
     public String getMessageFromPeers() throws IOException {
+        //currently stopped here because no peer messages
         byte[] arr = new byte[256];
         DatagramPacket packet = new DatagramPacket(arr, arr.length);
         peerSocket.receive(packet);
@@ -79,10 +80,11 @@ public class ProjectIteration2Client {
     }
 
     public void sendMessageToPeers(String message) throws IOException {
+        //I need to receive messages from my port
         DatagramPacket packet = new DatagramPacket(message.getBytes(),
                 message.getBytes().length,
                 registrySocket.getLocalAddress(),
-                PEER_PORT);
+                peerSocket.getLocalPort());
         peerSocket.send(packet);
     }
 
@@ -94,7 +96,7 @@ public class ProjectIteration2Client {
     }
 
     private String getLocationMessageRequest() {
-        return registrySocket.getLocalAddress().toString().substring(1) + ":" + PEER_PORT + '\n';
+        return registrySocket.getLocalAddress().toString().substring(1) + ":" + peerSocket.getLocalPort() + '\n';
     }
 
     private String getFilesAsStringFrom(String path) throws IOException {
@@ -179,7 +181,7 @@ public class ProjectIteration2Client {
 //            client.connectToRegistry(ProjectConstants.REGISTRY_URL);
             client.handleCommunicationWithRegistry();
             client.handleCommunicationWithPeers();
-            client.handleCommunicationWithRegistry();
+//            client.handleCommunicationWithRegistry();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

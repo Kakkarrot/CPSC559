@@ -1,14 +1,17 @@
-package ProjectIteration1;
+package ProjectIteration2;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
-public class Peer {
+public class MyPeer {
 	String address;
 	int port;
 	String teamName;
-	List<Peer> peersSent;
+	CopyOnWriteArraySet<MyPeer> peersSent;
+	CopyOnWriteArrayList<PeerMessage> messagesReceived;
 
 	public String getAddress() {
 		return address;
@@ -34,18 +37,18 @@ public class Peer {
 		this.teamName = teamName;
 	}
 
-	public Peer(String address, int port) {
+	public MyPeer(String address, int port) {
 		setAddress(address);
 		setPort(port);
 		setTeamName("");
-		peersSent = new ArrayList<>();
+		peersSent = new CopyOnWriteArraySet<>();
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		Peer peer = (Peer) o;
+		MyPeer peer = (MyPeer) o;
 		return port == peer.port && address.equals(peer.address) && teamName.equals(peer.teamName);
 	}
 

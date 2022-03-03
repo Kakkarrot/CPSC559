@@ -1,6 +1,7 @@
 package ProjectIteration1;
 
 import Project.ProjectConstants;
+import ProjectIteration2.MyPeer;
 
 import java.io.*;
 import java.net.Socket;
@@ -16,7 +17,7 @@ public class ProjectIteration1Client {
     private Socket socket;
     private BufferedReader readSocket;
     private BufferedWriter writeSocket;
-    private CopyOnWriteArraySet<Peer> peers;
+    private CopyOnWriteArraySet<MyPeer> peers;
 
     public void connectToServer(String serverUrl) throws IOException {
         socket = new Socket(serverUrl, ProjectConstants.REGISTRY_PORT);
@@ -87,7 +88,7 @@ public class ProjectIteration1Client {
         for (int i = 0; i < Integer.parseInt(numberOfPeers); i++) {
             String response = getServerResponse();
             String[] temp = response.split(":");
-            Peer peer = new Peer(temp[0], Integer.parseInt(temp[1]));
+            MyPeer peer = new MyPeer(temp[0], Integer.parseInt(temp[1]));
             peers.add(peer);
         }
     }
@@ -106,7 +107,7 @@ public class ProjectIteration1Client {
         StringBuilder message = new StringBuilder();
         message.append(peers.size());
         message.append('\n');
-        for (Peer peer : peers) {
+        for (MyPeer peer : peers) {
             message.append(peer.getAddress());
             message.append(':');
             message.append(peer.getPort());

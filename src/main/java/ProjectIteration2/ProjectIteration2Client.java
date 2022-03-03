@@ -10,8 +10,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProjectIteration2Client {
     public static final String DIRECTORY = "/Users/willieli/CPSC559/src/main/java/ProjectIteration2";
@@ -19,9 +20,10 @@ public class ProjectIteration2Client {
     private Socket registrySocket;
     private BufferedReader readSocket;
     private BufferedWriter writeSocket;
-    private CopyOnWriteArraySet<MyPeer> peers;
+    private ConcurrentHashMap<String, MyPeer> peers;
     private ReceivePeerMessagesThread receivePeerMessagesThread;
     private SendPeersMessageThread sendPeersMessageThread;
+    private AtomicInteger timeStamp;
 
     private DatagramSocket receivePeerMessagesSocket;
 
@@ -30,17 +32,18 @@ public class ProjectIteration2Client {
         registrySocket = new Socket(serverUrl, ProjectConstants.REGISTRY_PORT);
         readSocket = new BufferedReader(new InputStreamReader(registrySocket.getInputStream()));
         writeSocket = new BufferedWriter(new OutputStreamWriter(registrySocket.getOutputStream()));
-        peers = new CopyOnWriteArraySet<>();
+        peers = new ConcurrentHashMap<>();
     }
 
     public void initializePeerCommunication() throws IOException {
+        timeStamp = new AtomicInteger(0);
         receivePeerMessagesSocket = new DatagramSocket();
     }
 
     public void startPeerCommunicationThreads() throws IOException {
-        receivePeerMessagesThread = new ReceivePeerMessagesThread(receivePeerMessagesSocket, peers);
+        receivePeerMessagesThread = new ReceivePeerMessagesThread(receivePeerMessagesSocket, peers, timeStamp);
         receivePeerMessagesThread.start();
-        sendPeersMessageThread = new SendPeersMessageThread(peers);
+        sendPeersMessageThread = new SendPeersMessageThread(peers, timeStamp);
         sendPeersMessageThread.start();
     }
 
@@ -153,7 +156,7 @@ public class ProjectIteration2Client {
             System.out.println(response);
             String[] temp = response.split(":");
             MyPeer peer = new MyPeer(temp[0], Integer.parseInt(temp[1]));
-            peers.add(peer);
+            peers.put(response, peer);
         }
     }
 
@@ -171,7 +174,7 @@ public class ProjectIteration2Client {
         StringBuilder message = new StringBuilder();
         message.append(peers.size());
         message.append('\n');
-        for (MyPeer peer : peers) {
+        for (MyPeer peer : peers.values()) {
             message.append(peer.getAddress());
             message.append(':');
             message.append(peer.getPort());
@@ -185,6 +188,7 @@ public class ProjectIteration2Client {
         message += getAllPeers();
         message += getSingleSourceForInteration1();
         message += getAllPeers();
+        System.out.println(message);
         return message;
     }
 
@@ -192,7 +196,8 @@ public class ProjectIteration2Client {
         ProjectIteration2Client client = new ProjectIteration2Client();
         try {
             client.initializePeerCommunication();
-            client.connectToRegistry("localhost");
+            client.connectToRegistry(ProjectConstants.REGISTRY_URL);
+//            client.connectToRegistry("localhost");
             client.handleCommunicationWithRegistry(ProjectConstants.TEAM_NAME);
             client.startPeerCommunicationThreads();
             while (client.receivePeerMessagesThread.isRunning) {

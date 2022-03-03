@@ -10,7 +10,6 @@ public class MyPeer {
 	String address;
 	int port;
 	String teamName;
-	CopyOnWriteArraySet<MyPeer> peersSent;
 	CopyOnWriteArrayList<PeerMessage> messagesReceived;
 
 	public String getAddress() {
@@ -41,7 +40,7 @@ public class MyPeer {
 		setAddress(address);
 		setPort(port);
 		setTeamName("");
-		peersSent = new CopyOnWriteArraySet<>();
+		messagesReceived = new CopyOnWriteArrayList<>();
 	}
 
 	@Override

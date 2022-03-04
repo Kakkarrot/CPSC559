@@ -51,7 +51,7 @@ public class ReceivePeerMessagesThread extends Thread {
     private void changeMessageToSnip(PeerMessage message) {
         String[] temp = message.message.split(" ");
         message.timeStamp = Integer.parseInt(temp[0].substring(4));
-        message.message = message.message.substring(temp[0].length());
+        message.message = message.message.substring(temp[0].length() + 1);
     }
 
     private void handleSnip(PeerMessage message) {
@@ -62,7 +62,7 @@ public class ReceivePeerMessagesThread extends Thread {
         String peerKey = message.address + ":" + message.port;
         MyPeer peer = peers.getOrDefault(peerKey, new MyPeer(message.address, message.port));
         peer.messagesReceived.add(message);
-        System.out.println("Snip: " + peerKey);
+//        System.out.println("Snip: " + peerKey);
         peers.putIfAbsent(peerKey, peer);
         snipMessages.add(new PeerMessage(timeStamp.get(), message.message, message.address, message.port));
         System.out.println(message.message);

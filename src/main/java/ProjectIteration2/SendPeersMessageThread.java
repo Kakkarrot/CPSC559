@@ -82,23 +82,21 @@ public class SendPeersMessageThread extends Thread {
 
     private void sendPeer() throws InterruptedException, IOException {
         for (MyPeer recipient : peers.values()) {
-            if (Math.random() > 0.75) {
-                for (MyPeer peer : peers.values()) {
-                    if (Math.random() > 0.75) {
-                        if (peer != recipient) {
-                            String message = PEER_START + peer.getAddress() + ":" + peer.getPort();
-                            byte[] packet = message.getBytes();
-                            DatagramPacket dp = new DatagramPacket(packet, packet.length, InetAddress.getByName(recipient.getAddress()), recipient.getPort());
-                            socket.send(dp);
-                            peerMessageSent.add(message.substring(4) + " "
-                                    + InetAddress.getByName(recipient.getAddress()) + ":" + peer.getPort() + " "
-                                    + LocalDateTime.now());
-                        }
+            for (MyPeer peer : peers.values()) {
+                if (peer != recipient) {
+                    if (Math.random() > 0.25) {
+                        continue;
                     }
-                    break;
+                    String message = PEER_START + peer.getAddress() + ":" + peer.getPort();
+                    byte[] packet = message.getBytes();
+                    DatagramPacket dp = new DatagramPacket(packet, packet.length, InetAddress.getByName(recipient.getAddress()), recipient.getPort());
+                    socket.send(dp);
+//                    System.out.println("Sent: " + message + " to " + recipient.getAddress() + ":" + recipient.getPort());
+                    peerMessageSent.add(message.substring(4) + " "
+                            + InetAddress.getByName(recipient.getAddress()) + ":" + peer.getPort() + " "
+                            + LocalDateTime.now());
                 }
             }
-            break;
         }
     }
 

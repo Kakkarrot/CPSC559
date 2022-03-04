@@ -28,6 +28,13 @@ public class ProjectIteration2Client {
     private String selfAddress;
     private int selfPort;
 
+    public String getPeersInList() {
+        StringBuilder report = new StringBuilder(peers.size() + "\n");
+        for (String key : peers.keySet()) {
+            report.append(key).append("\n");
+        }
+        return report.toString();
+    }
 
     public void connectToRegistryFirstTime(String serverUrl) throws IOException {
         registrySocket = new Socket(serverUrl, ProjectConstants.REGISTRY_PORT);
@@ -49,7 +56,7 @@ public class ProjectIteration2Client {
 
     }
 
-    public void startPeerCommunicationThreads() throws IOException {
+    public void startPeerCommunicationThreads() {
         receivePeerMessagesThread = new ReceivePeerMessagesThread(receivePeerMessagesSocket, peers, timeStamp);
         receivePeerMessagesThread.start();
         sendPeersMessageThread = new SendPeersMessageThread(peers, timeStamp, receivePeerMessagesSocket);
@@ -124,7 +131,7 @@ public class ProjectIteration2Client {
     /**
      * Registry Uses Team Name as Unique Identifier
      * @return Team Name
-     * @param teamName
+     * @param teamName my custom identifier
      */
     private String getTeamNameRequestMessage(String teamName) {
         return teamName + '\n';
@@ -162,7 +169,7 @@ public class ProjectIteration2Client {
 
 
     private String getAllPeers() {
-        StringBuilder message = new StringBuilder("");
+        StringBuilder message = new StringBuilder();
         message.append(peers.size());
         message.append('\n');
         for (MyPeer peer : peers.values()) {
@@ -178,6 +185,7 @@ public class ProjectIteration2Client {
         String message = "";
         message += getAllPeers();
         message += getSingleSourceForInteration1();
+        message += getPeersInList();
         message += sendPeersMessageThread.getPeerMessageSent();
         message += receivePeerMessagesThread.getPeerMessageReceived();
         message += receivePeerMessagesThread.getSnipMessages();
@@ -195,13 +203,13 @@ public class ProjectIteration2Client {
             client.addSelfToPeers();
             client.startPeerCommunicationThreads();
             while (client.receivePeerMessagesThread.isRunning) {
-                Thread.sleep(1000);
+                Thread.onSpinWait();
             }
             client.sendPeersMessageThread.isRunning = false;
-            Thread.sleep(3000);
 //            client.connectToRegistrySecondTime(ProjectConstants.REGISTRY_URL);
             client.connectToRegistrySecondTime("localhost");
             client.handleCommunicationWithRegistry(ProjectConstants.TEAM_NAME);
+            System.exit(0);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

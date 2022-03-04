@@ -1,16 +1,15 @@
 package ProjectIteration2;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 public class MyPeer {
 	String address;
 	int port;
 	String teamName;
 	CopyOnWriteArrayList<PeerMessage> messagesReceived;
+	String timeStamp;
 
 	public String getAddress() {
 		return address;
@@ -41,6 +40,7 @@ public class MyPeer {
 		setPort(port);
 		setTeamName("");
 		messagesReceived = new CopyOnWriteArrayList<>();
+		timeStamp = LocalDateTime.now().toString();
 	}
 
 	@Override

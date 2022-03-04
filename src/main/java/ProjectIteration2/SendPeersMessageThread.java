@@ -84,7 +84,7 @@ public class SendPeersMessageThread extends Thread {
         for (MyPeer recipient : peers.values()) {
             for (MyPeer peer : peers.values()) {
                 if (peer != recipient) {
-                    if (Math.random() > 0.25) {
+                    if (Math.random() > 0.1) {
                         continue;
                     }
                     String message = PEER_START + peer.getAddress() + ":" + peer.getPort();
@@ -114,7 +114,11 @@ public class SendPeersMessageThread extends Thread {
         byte[] packet = message.getBytes();
         for (MyPeer peer : peers.values()) {
             DatagramPacket dp = new DatagramPacket(packet, packet.length, InetAddress.getByName(peer.getAddress()), peer.getPort());
-            socket.send(dp);
+            try {
+                socket.send(dp);
+            } catch (Exception e) {
+                System.out.println("Bad peer");
+            }
         }
     }
 }

@@ -198,8 +198,8 @@ public class ProjectIteration2Client {
         ProjectIteration2Client client = new ProjectIteration2Client();
         try {
             client.initializePeerCommunication();
-            client.connectToRegistryFirstTime(ProjectConstants.REGISTRY_URL);
-//            client.connectToRegistryFirstTime("localhost");
+//            client.connectToRegistryFirstTime(ProjectConstants.REGISTRY_URL);
+            client.connectToRegistryFirstTime("localhost");
             client.handleCommunicationWithRegistry(ProjectConstants.TEAM_NAME);
             client.addSelfToPeers();
             client.startPeerCommunicationThreads();
@@ -208,30 +208,8 @@ public class ProjectIteration2Client {
             }
             client.sendPeersMessageThread.isRunning = false;
             client.getReportRequestMessage();
-            BufferedWriter writer = null;
-            try
-            {
-                writer = new BufferedWriter( new FileWriter( "test.txt"));
-                writer.write( client.getReportRequestMessage());
-
-            }
-            catch ( IOException e)
-            {
-            }
-            finally
-            {
-                try
-                {
-                    if ( writer != null)
-                        writer.close( );
-                }
-                catch ( IOException e)
-                {
-                }
-            }
-
-            client.connectToRegistrySecondTime(ProjectConstants.REGISTRY_URL);
-//            client.connectToRegistrySecondTime("localhost");
+//            client.connectToRegistrySecondTime(ProjectConstants.REGISTRY_URL);
+            client.connectToRegistrySecondTime("localhost");
             client.handleCommunicationWithRegistry(ProjectConstants.TEAM_NAME);
             System.exit(0);
         } catch (Exception e) {

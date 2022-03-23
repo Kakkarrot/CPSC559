@@ -66,10 +66,6 @@ public class ReceivePeerMessagesThread extends Thread {
         peers.putIfAbsent(peerKey, peer);
         snipMessages.add(new PeerMessage(timeStamp.get(), message.message, message.address, message.port));
         System.out.println(message.message);
-
-        if (message.message.contains("once_upon_a_time")) {
-            isRunning = false;
-        }
     }
 
     public String getSnipMessages() {

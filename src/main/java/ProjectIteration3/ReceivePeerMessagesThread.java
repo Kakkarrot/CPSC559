@@ -47,12 +47,9 @@ public class ReceivePeerMessagesThread extends Thread {
     }
 
     private void handleStop(PeerMessage message) {
-        {
-            stopUrl = message.address;
-            stopPort = message.port;
-            isRunning = false;
-            System.out.println("Stop received from: " + stopUrl + ":" + stopPort);
-        }
+        PeerAckSender.sendRegistryAck(message.address, message.port);
+        isRunning = false;
+        System.out.println("Stop received from: " + stopUrl + ":" + stopPort);
     }
 
     private void changeMessageToSnip(PeerMessage message) {
@@ -112,7 +109,7 @@ public class ReceivePeerMessagesThread extends Thread {
                 + LocalDateTime.now());
     }
 
-    public String getPeerMessageReceived(){
+    public String getPeerMessageReceived() {
         StringBuilder report = new StringBuilder(peersMessagesReceived.size() + "\n");
         for (String message : peersMessagesReceived) {
             report.append(message).append("\n");
@@ -136,7 +133,7 @@ public class ReceivePeerMessagesThread extends Thread {
         }
     }
 
-    private void handleAck(PeerMessage message){
+    private void handleAck(PeerMessage message) {
         try {
             acks.add(new PeerAck(
                     Integer.parseInt(message.message.substring(4)),

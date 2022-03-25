@@ -211,7 +211,6 @@ public class ProjectIteration3Client {
                 Thread.onSpinWait();
             }
             client.sendPeersMessageThread.isRunning = false;
-            client.sendPeersMessageThread.sendRegistryAck(client.receivePeerMessagesThread.stopUrl, client.receivePeerMessagesThread.stopPort);
             System.out.println("Waiting for registry to stop sending acks");
             Thread.sleep(5000);
             client.getReportRequestMessage();

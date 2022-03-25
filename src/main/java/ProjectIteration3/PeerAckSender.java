@@ -22,4 +22,17 @@ public class PeerAckSender {
         socket.send(dp);
         System.out.println("Sent ack to peer: " + message.address + ":" + message.port);
     }
+
+    static public void sendRegistryAck(String address, int port) {
+        String message = "ack" + ProjectConstants.TEAM_NAME;
+        byte[] packet = message.getBytes();
+        try {
+            DatagramPacket dp = new DatagramPacket(packet, packet.length,
+                    InetAddress.getByName(address), port);
+            socket.send(dp);
+            System.out.println("Sent ack to registry: " + address + ":" + port);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

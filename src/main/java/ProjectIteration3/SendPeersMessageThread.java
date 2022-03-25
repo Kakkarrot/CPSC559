@@ -1,7 +1,6 @@
 package ProjectIteration3;
 
 import Project.ProjectConstants;
-import ProjectIteration3.MyPeer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,11 +21,13 @@ public class SendPeersMessageThread extends Thread {
     String MESSAGE_BODY = ProjectConstants.TEAM_NAME;
     public AtomicInteger timeStamp;
     public CopyOnWriteArrayList<String> peerMessageSent;
+    public String registryAddress;
     volatile boolean isRunning = true;
     BufferedReader inputStream = new BufferedReader(
             new InputStreamReader(System.in));
 
-    public SendPeersMessageThread(ConcurrentHashMap<String, ProjectIteration3.MyPeer> peers, AtomicInteger timeStamp, DatagramSocket socket) {
+    public SendPeersMessageThread(ConcurrentHashMap<String, ProjectIteration3.MyPeer> peers, AtomicInteger timeStamp, DatagramSocket socket, String registryAddress) {
+        this.registryAddress = registryAddress;
         this.peers = peers;
         this.timeStamp = timeStamp;
         try {
@@ -41,17 +42,6 @@ public class SendPeersMessageThread extends Thread {
     public void run() {
         System.out.println("Welcome to the chat room! Type anything and press enter to send. ");
 
-        Runnable incrementTimer = () -> {
-            while (!interrupted()) {
-                timeStamp.getAndIncrement();
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
         Runnable sendPeer = () -> {
             while (!interrupted()) {
                 try {
@@ -63,9 +53,7 @@ public class SendPeersMessageThread extends Thread {
             }
         };
 
-        Thread timerThread = new Thread(incrementTimer);
         Thread peerThread = new Thread(sendPeer);
-        timerThread.start();
         peerThread.start();
 
 
@@ -77,8 +65,20 @@ public class SendPeersMessageThread extends Thread {
                 e.printStackTrace();
             }
         }
-        timerThread.interrupt();
         peerThread.interrupt();
+    }
+
+    public void sendRegistryAck(String address, int port) {
+        String message = "ack" + ProjectConstants.TEAM_NAME;
+        byte[] packet = message.getBytes();
+        try {
+            DatagramPacket dp = new DatagramPacket(packet, packet.length,
+                    InetAddress.getByName(address), port);
+            socket.send(dp);
+            System.out.println("Sent ack to registry: " + address + ":" + port);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void sendPeer() throws InterruptedException, IOException {
@@ -112,6 +112,7 @@ public class SendPeersMessageThread extends Thread {
     private void sendSnip() throws IOException, InterruptedException {
         String messageBody = inputStream.readLine();
         String message = MESSAGE_START + timeStamp + " " + messageBody;
+        timeStamp.getAndIncrement();
         byte[] packet = message.getBytes();
         for (MyPeer peer : peers.values()) {
             DatagramPacket dp = new DatagramPacket(packet, packet.length, InetAddress.getByName(peer.getAddress()), peer.getPort());

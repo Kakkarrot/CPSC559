@@ -1,9 +1,6 @@
 package ProjectIteration3;
 
 import Project.ProjectConstants;
-import ProjectIteration3.MyPeer;
-import ProjectIteration3.ReceivePeerMessagesThread;
-import ProjectIteration3.SendPeersMessageThread;
 
 import java.io.*;
 import java.net.DatagramSocket;
@@ -59,10 +56,12 @@ public class ProjectIteration3Client {
 
     }
 
-    public void startPeerCommunicationThreads() {
+    public void startPeerCommunicationThreads(String registryAddress) {
+        System.out.println("Socket"  + receivePeerMessagesSocket.getLocalAddress()
+                + " " +receivePeerMessagesSocket.getLocalPort());
         receivePeerMessagesThread = new ReceivePeerMessagesThread(receivePeerMessagesSocket, peers, timeStamp);
         receivePeerMessagesThread.start();
-        sendPeersMessageThread = new SendPeersMessageThread(peers, timeStamp, receivePeerMessagesSocket);
+        sendPeersMessageThread = new SendPeersMessageThread(peers, timeStamp, receivePeerMessagesSocket, registryAddress);
         sendPeersMessageThread.start();
     }
 
@@ -193,6 +192,7 @@ public class ProjectIteration3Client {
         message += sendPeersMessageThread.getPeerMessageSent();
         message += receivePeerMessagesThread.getPeerMessageReceived();
         message += receivePeerMessagesThread.getSnipMessages();
+        message += receivePeerMessagesThread.getAcks();
         System.out.println(message);
         return message;
     }
@@ -205,11 +205,15 @@ public class ProjectIteration3Client {
             client.connectToRegistryFirstTime("localhost");
             client.handleCommunicationWithRegistry(ProjectConstants.TEAM_NAME);
             client.addSelfToPeers();
-            client.startPeerCommunicationThreads();
+//            client.startPeerCommunicationThreads(ProjectConstants.REGISTRY_URL);
+            client.startPeerCommunicationThreads("localhost");
             while (client.receivePeerMessagesThread.isRunning) {
                 Thread.onSpinWait();
             }
             client.sendPeersMessageThread.isRunning = false;
+            client.sendPeersMessageThread.sendRegistryAck(client.receivePeerMessagesThread.stopUrl, client.receivePeerMessagesThread.stopPort);
+            System.out.println("Waiting for registry to stop sending acks");
+            Thread.sleep(5000);
             client.getReportRequestMessage();
 //            client.connectToRegistrySecondTime(ProjectConstants.REGISTRY_URL);
             client.connectToRegistrySecondTime("localhost");

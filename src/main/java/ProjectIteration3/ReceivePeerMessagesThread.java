@@ -15,10 +15,14 @@ public class ReceivePeerMessagesThread extends Thread {
     private DatagramSocket socket;
     public ConcurrentHashMap<String, ProjectIteration3.MyPeer> peers;
     public CopyOnWriteArrayList<PeerMessage> snipMessages;
+    public CopyOnWriteArrayList<PeerAck> acks;
     public CopyOnWriteArrayList<String> peersMessagesReceived;
     public AtomicInteger timeStamp;
     public volatile boolean isRunning = true;
     public HashSet<ProjectIteration3.MyPeer> sources;
+    public String stopUrl;
+    public int stopPort;
+
 
     public ReceivePeerMessagesThread(DatagramSocket socket, ConcurrentHashMap<String, ProjectIteration3.MyPeer> peers, AtomicInteger timeStamp) {
         this.socket = socket;
@@ -26,6 +30,7 @@ public class ReceivePeerMessagesThread extends Thread {
         this.timeStamp = timeStamp;
         sources = new HashSet<>();
         snipMessages = new CopyOnWriteArrayList<>();
+        acks = new CopyOnWriteArrayList<>();
         peersMessagesReceived = new CopyOnWriteArrayList<>();
     }
 
@@ -42,11 +47,11 @@ public class ReceivePeerMessagesThread extends Thread {
     }
 
     private void handleStop(PeerMessage message) {
-        System.out.println("stop");
-//        if (message.address == ProjectConstants.REGISTRY_URL &&
-//                message.port == ProjectConstants.REGISTRY_PORT)
         {
+            stopUrl = message.address;
+            stopPort = message.port;
             isRunning = false;
+            System.out.println("Stop received from: " + stopUrl + ":" + stopPort);
         }
     }
 
@@ -67,7 +72,11 @@ public class ReceivePeerMessagesThread extends Thread {
 //        System.out.println("Snip: " + peerKey);
         peers.putIfAbsent(peerKey, peer);
         snipMessages.add(new PeerMessage(timeStamp.get(), message.message, message.address, message.port));
-        System.out.println(message.message);
+        try {
+            PeerAckSender.sendPeerAck(message);
+        } catch (IOException e) {
+            System.out.println("Failed to send ack");
+        }
     }
 
     public String getSnipMessages() {
@@ -76,6 +85,16 @@ public class ReceivePeerMessagesThread extends Thread {
             report.append(message.timeStamp).append(" ");
             report.append(message.message).append(" ");
             report.append(message.address).append(":").append(message.port);
+            report.append("\n");
+        }
+        return report.toString();
+    }
+
+    public String getAcks() {
+        StringBuilder report = new StringBuilder(acks.size() + "\n");
+        for (PeerAck ack : acks) {
+            report.append(ack.timeStamp).append(" ");
+            report.append(ack.address).append(":").append(ack.port);
             report.append("\n");
         }
         return report.toString();
@@ -109,10 +128,24 @@ public class ReceivePeerMessagesThread extends Thread {
                 case "stop" -> handleStop(message);
                 case "snip" -> handleSnip(message);
                 case "peer" -> handlePeer(message);
+                case "ack " -> handleAck(message);
             }
         } catch (Exception e) {
             System.err.println("Could not parse " + message);
             e.printStackTrace();
+        }
+    }
+
+    private void handleAck(PeerMessage message){
+        try {
+            acks.add(new PeerAck(
+                    Integer.parseInt(message.message.substring(4)),
+                    message.address,
+                    message.port
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Bad peer ack");
         }
     }
 

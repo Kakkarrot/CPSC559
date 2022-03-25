@@ -118,7 +118,9 @@ public class ProjectIteration2Client {
         if (files != null) {
             for (File file : files) {
                 if (!file.isDirectory()) {
-                    result.append(getFileAsString(file.getAbsolutePath())).append('\n');
+                    if (file.getName().charAt(0) != '.') {
+                        result.append(getFileAsString(file.getAbsolutePath())).append('\n');
+                    }
                 }
             }
         }
